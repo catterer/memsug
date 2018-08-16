@@ -67,7 +67,7 @@ public:
         const_iterator& operator--() { node_ = node_->parent(); }
         bool operator==(const const_iterator& other) const { return node_ == other.node_; }
         bool operator!=(const const_iterator& other) const { return !(*this == other); }
-        auto node() const -> const std::weak_ptr<Node<VAL>>& { return *node_; }
+        auto node() const -> std::weak_ptr<const Node<VAL>>& { return *node_; }
     private:
         std::weak_ptr<const Node<VAL>> node_{};
     };
