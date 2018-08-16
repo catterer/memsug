@@ -1,7 +1,10 @@
 #pragma once
+#include <choose.h>
+
 #include <list>
 #include <map>
 #include <memory>
+#include <cassert>
 
 namespace preftree {
 
@@ -41,36 +44,31 @@ private:
     VAL                     val_;
 };
 
+template <class T, bool isconst = false> 
+class preftree_iterator {
+public:
+    using value_type = T;
+    using reference = typename choose<isconst, const T&, T&>::type;
+    using pointer = typename choose<isconst, const T*, T*>::type;
+    using wptr = std::weak_ptr<typename choose<isconst, const T, T>::type>;
+
+    preftree_iterator(std::weak_ptr<Node<T>> n): node_{n} {}
+    preftree_iterator(preftree_iterator<T, false> it): node_{it.operator->()} {}
+    auto operator->() const -> pointer { return node_->valptr(); }
+    auto operator*() const -> reference { return node_->valref(); }
+    preftree_iterator& operator--() { node_ = node_->parent(); }
+    bool operator==(const preftree_iterator& other) const { return node_ == other.node_; }
+    bool operator!=(const preftree_iterator& other) const { return !(*this == other); }
+    auto node() const -> std::weak_ptr<const Node<T>>& { return node_; }
+private:
+    std::weak_ptr<Node<T>> node_{};
+};
+
 template<typename VAL>
 class Preftree {
 public:
-    class iterator {
-    public:
-        iterator(std::weak_ptr<Node<VAL>> n): node_{n} {}
-        auto operator->() -> VAL* { return node_->valptr(); }
-        auto operator*() -> VAL& { return node_->valref(); }
-        iterator& operator--() { node_ = node_->parent(); }
-        bool operator==(const iterator& other) const { return node_ == other.node_; }
-        bool operator!=(const iterator& other) const { return !(*this == other); }
-        auto node() const -> const std::weak_ptr<Node<VAL>>& { return *node_; }
-        auto node() -> std::weak_ptr<Node<VAL>>& { return *node_; }
-    private:
-        std::weak_ptr<Node<VAL>> node_{};
-    };
-
-    class const_iterator {
-    public:
-        const_iterator(std::weak_ptr<const Node<VAL>> n): node_{n} {}
-        const_iterator(iterator&& it): node_{it.operator->()} {}
-        auto operator->() const -> const VAL* { return node_->valptr(); }
-        auto operator*() const -> const VAL& { return node_->valref(); }
-        const_iterator& operator--() { node_ = node_->parent(); }
-        bool operator==(const const_iterator& other) const { return node_ == other.node_; }
-        bool operator!=(const const_iterator& other) const { return !(*this == other); }
-        auto node() const -> std::weak_ptr<const Node<VAL>>& { return *node_; }
-    private:
-        std::weak_ptr<const Node<VAL>> node_{};
-    };
+    using const_iterator = preftree_iterator<VAL, true>;
+    using iterator = preftree_iterator<VAL, false>;
 
     Preftree() = default;
     auto emplace(Key, VAL&&) -> std::pair<bool, iterator>;
@@ -90,6 +88,7 @@ public:
 private:
     std::shared_ptr<Node<VAL>> root_;
 };
+
 
 template<typename VAL>
 auto Preftree<VAL>::find_closest(const Path& p, Path::const_iterator& pit) const
@@ -113,6 +112,18 @@ auto Preftree<VAL>::find_closest(const Path& p, Path::const_iterator& pit, const
     if (child == children.end())
         return tit;
     return find_closest(p, ++pit, {child->second});
+}
+
+template<typename VAL>
+auto Preftree<VAL>::find(Key k) const
+    -> const_iterator
+{
+    Path p(k);
+    auto pi = p.begin();
+    auto ti = find_closest(p, pi, cbegin());
+    if (pi == p.end())
+        return ti;
+    return cend();
 }
 
 }
