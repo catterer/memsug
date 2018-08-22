@@ -3,7 +3,8 @@ cmake_minimum_required(VERSION 3.11)
 set(CMAKE_CXX_FLAGS "-std=c++17 -Wall")
 project(preftree)
  
-include_directories(include)
+include_directories(include ~/googletest/.install/include)
+link_directories(~/googletest/.install/lib64)
  
 set(PREFTREE src/preftree.cc)
 add_library(preftree ${PREFTREE})
