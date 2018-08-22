@@ -5,6 +5,7 @@
 #include <map>
 #include <memory>
 #include <cassert>
+#include <iostream>
 
 namespace preftree {
 
@@ -50,6 +51,8 @@ public:
     auto children() const -> const Children& { return children_; }
     auto children() -> Children& { return children_; }
 
+    void print(std::ostream&) const;
+
 private:
     std::weak_ptr<Node<VAL>>    parent_{};
     Children                children_;
@@ -79,10 +82,11 @@ public:
     auto end() -> iterator { return {}; }
     auto cend() const -> const_iterator { return {}; }
 
+    void print(std::ostream& out) const { root_->print(out); }
+
 private:
     std::shared_ptr<Node<VAL>> root_{std::make_shared<Node<VAL>>(Node<VAL>({}, {}))};
 };
-
 
 template<typename VAL>
 auto Preftree<VAL>::emplace(Key k, VAL&& v)
@@ -161,6 +165,14 @@ auto Preftree<VAL>::find(Key k)
     if (pi == p.end())
         return ti;
     return cend();
+}
+
+template<typename VAL>
+void Node<VAL>::print(std::ostream& out) const {
+    out << "(" << val_ << ": ";
+    for (const auto& c: children())
+        c.second->print(out);
+    out << ")";
 }
 
 }
