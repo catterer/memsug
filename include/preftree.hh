@@ -14,6 +14,9 @@ public:
     Path(uint64_t val):
         key_{val}
     {
+        if (!val)
+            push_front(0);
+
         for(; val; val /= 10)
             push_front(val%10);
     }
@@ -53,35 +56,15 @@ private:
     VAL                     val_;
 };
 
-template <class T, bool isconst = false> 
-class preftree_iterator {
-public:
-    using value_type = T;
-    using reference = typename choose<isconst, const T&, T&>::type;
-    using pointer = typename choose<isconst, const T*, T*>::type;
-    using wptr = std::weak_ptr<typename choose<isconst, const T, T>::type>;
-
-    preftree_iterator(std::weak_ptr<Node<T>> n): node_{n} {}
-    preftree_iterator(preftree_iterator<T, false> it): node_{it.operator->()} {}
-    auto operator->() const -> pointer { return node_->valptr(); }
-    auto operator*() const -> reference { return node_->valref(); }
-    preftree_iterator& operator--() { node_ = node_->parent(); }
-    bool operator==(const preftree_iterator& other) const { return node_ == other.node_; }
-    bool operator!=(const preftree_iterator& other) const { return !(*this == other); }
-    auto node() const -> std::weak_ptr<Node<T>>& { return node_; }
-private:
-    std::weak_ptr<Node<T>> node_{};
-};
-
 template<typename VAL>
 class Preftree {
 public:
-    using const_iterator = preftree_iterator<VAL, true>;
-    using iterator = preftree_iterator<VAL, false>;
+    using iterator = std::shared_ptr<Node<VAL>>;
+    using const_iterator = const std::shared_ptr<Node<VAL>>;
 
     Preftree() = default;
-    auto emplace(Key, VAL&&) -> std::pair<bool, iterator>;
-    auto emplace(iterator tit, const Path& path, Path::const_iterator pit, VAL&& v) -> std::pair<bool, iterator>;
+    auto emplace(Key, VAL&&) -> std::pair<iterator, bool>;
+    auto emplace(iterator, const Path&, Path::const_iterator, VAL&&) -> std::pair<iterator, bool>;
 
     auto find(Key) -> iterator;
     auto find(Key) const -> const_iterator;
@@ -90,11 +73,11 @@ public:
     auto find_closest(const Path&, Path::const_iterator&) const -> const_iterator;
     auto find_closest(const Path&, Path::const_iterator&, const_iterator start) const -> const_iterator;
 
-    auto begin() -> iterator { return iterator(root_); }
-    auto cbegin() -> const_iterator { return const_iterator(root_); }
+    auto begin() -> iterator { return root_; }
+    auto cbegin() const -> const_iterator { return root_; }
 
-    auto end() -> iterator { return iterator(nullptr); }
-    auto cend() const -> const_iterator { return const_iterator(nullptr); }
+    auto end() -> iterator { return {}; }
+    auto cend() const -> const_iterator { return {}; }
 
 private:
     std::shared_ptr<Node<VAL>> root_{std::make_shared<Node<VAL>>(Node<VAL>({}, {}))};
@@ -103,7 +86,7 @@ private:
 
 template<typename VAL>
 auto Preftree<VAL>::emplace(Key k, VAL&& v)
-    -> std::pair<bool, iterator>
+    -> std::pair<iterator, bool>
 {
     auto path = Path(k);
     auto pit = path.cbegin();
@@ -113,23 +96,23 @@ auto Preftree<VAL>::emplace(Key k, VAL&& v)
 
 template<typename VAL>
 auto Preftree<VAL>::emplace(iterator tit, const Path& path, Path::const_iterator pit, VAL&& v)
-    -> std::pair<bool, iterator>
+    -> std::pair<iterator, bool>
 {
     if (pit == path.cend())
-        return std::make_pair(false, tit);
+        return std::make_pair(tit, false);
 
-    auto& children = tit.node().children();
-    auto pr = children.emplace(*pit, std::make_shared<Node<VAL>>(tit.node(), std::move(v)));
-    assert(pr.first); // bug in find_closest
-    return std::make_pair(true, emplace(iterator(pr.second), path, ++pit, std::move(v)).second);
+    auto& children = tit->children();
+    auto pr = children.emplace(*pit, std::make_shared<Node<VAL>>(tit, std::move(v)));
+    assert(pr.second); // bug in find_closest
+    return std::make_pair(emplace(pr.first->second, path, ++pit, std::move(v)).first, true);
 }
 
 template<typename VAL>
 auto Preftree<VAL>::find_closest(const Path& p, Path::const_iterator& pit)
     -> iterator
 {
-    auto const_tit = find_closest(p, pit, cbegin());
-    return iterator(const_tit.node());
+    auto ci = const_cast<const Preftree<VAL>&>(*this).find_closest(p, pit);
+    return iterator(ci, const_cast<Node<VAL>*>(ci.get()));
 }
 
 template<typename VAL>
@@ -149,7 +132,7 @@ auto Preftree<VAL>::find_closest(const Path& p, Path::const_iterator& pit, const
     assert(tit != cend());
 
     auto d = Digit(*pit);
-    const auto& children = tit.node().children();
+    const auto& children = tit->children();
     auto child = children.find(d);
     if (child == children.end())
         return tit;
@@ -163,6 +146,18 @@ auto Preftree<VAL>::find(Key k) const
     Path p(k);
     auto pi = p.begin();
     auto ti = find_closest(p, pi, cbegin());
+    if (pi == p.end())
+        return ti;
+    return cend();
+}
+
+template<typename VAL>
+auto Preftree<VAL>::find(Key k)
+    -> iterator
+{
+    Path p(k);
+    auto pi = p.cbegin();
+    auto ti = find_closest(p, pi);
     if (pi == p.end())
         return ti;
     return cend();
