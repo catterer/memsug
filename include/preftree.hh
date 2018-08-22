@@ -51,7 +51,7 @@ public:
     auto children() const -> const Children& { return children_; }
     auto children() -> Children& { return children_; }
 
-    void print(std::ostream&) const;
+    void print(std::ostream&, unsigned) const;
 
 private:
     std::weak_ptr<Node<VAL>>    parent_{};
@@ -82,7 +82,7 @@ public:
     auto end() -> iterator { return {}; }
     auto cend() const -> const_iterator { return {}; }
 
-    void print(std::ostream& out) const { root_->print(out); }
+    void print(std::ostream& out) const { root_->print(out, 0); }
 
 private:
     std::shared_ptr<Node<VAL>> root_{std::make_shared<Node<VAL>>(Node<VAL>({}, {}))};
@@ -168,11 +168,15 @@ auto Preftree<VAL>::find(Key k)
 }
 
 template<typename VAL>
-void Node<VAL>::print(std::ostream& out) const {
-    out << "(" << val_ << ": ";
-    for (const auto& c: children())
-        c.second->print(out);
-    out << ")";
+void Node<VAL>::print(std::ostream& out, unsigned bkts_cnt) const {
+    static const char* bkts = "()[]{}";
+    out << bkts[bkts_cnt] << val_ << ": ";
+    for (const auto& c: children()) {
+        out << int(c.first) << "=";
+        c.second->print(out, (bkts_cnt+2) % (sizeof(bkts)-1));
+        out << " ";
+    }
+    out << bkts[bkts_cnt+1];
 }
 
 }
