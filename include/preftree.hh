@@ -48,6 +48,8 @@ public:
     auto valptr() const -> const VAL* { return &val_; }
     auto valptr() -> VAL* { return &val_; }
 
+    void val(VAL&& v) { val_ = std::move(v); }
+
     auto children() const -> const Children& { return children_; }
     auto children() -> Children& { return children_; }
 
@@ -67,7 +69,7 @@ public:
 
     Preftree() = default;
     auto emplace(Key, VAL&&) -> std::pair<iterator, bool>;
-    auto emplace(iterator, const Path&, Path::const_iterator, VAL&&) -> std::pair<iterator, bool>;
+    auto grow(iterator, const Path&, Path::const_iterator, VAL&&) -> iterator;
 
     auto find(Key) -> iterator;
     auto find(Key) const -> const_iterator;
@@ -95,20 +97,24 @@ auto Preftree<VAL>::emplace(Key k, VAL&& v)
     auto path = Path(k);
     auto pit = path.cbegin();
     auto ti = find_closest(path, pit);
-    return emplace(ti, path, pit, std::move(v));
+    if (pit == path.cend())
+        return std::make_pair(ti, false);
+    return std::make_pair(grow(ti, path, pit, std::move(v)), true);
 }
 
 template<typename VAL>
-auto Preftree<VAL>::emplace(iterator tit, const Path& path, Path::const_iterator pit, VAL&& v)
-    -> std::pair<iterator, bool>
+auto Preftree<VAL>::grow(iterator tit, const Path& path, Path::const_iterator pit, VAL&& v)
+    -> iterator
 {
-    if (pit == path.cend())
-        return std::make_pair(tit, false);
+    if (pit == path.cend()) {
+        tit->val(std::move(v));
+        return tit;
+    }
 
     auto& children = tit->children();
-    auto pr = children.emplace(*pit, std::make_shared<Node<VAL>>(tit, std::move(v)));
+    auto pr = children.emplace(*pit, std::make_shared<Node<VAL>>(tit, VAL()));
     assert(pr.second); // bug in find_closest
-    return std::make_pair(emplace(pr.first->second, path, ++pit, std::move(v)).first, true);
+    return grow(pr.first->second, path, ++pit, std::move(v));
 }
 
 template<typename VAL>
@@ -169,7 +175,7 @@ auto Preftree<VAL>::find(Key k)
 
 template<typename VAL>
 void Node<VAL>::print(std::ostream& out, unsigned bkts_cnt) const {
-    static const char* bkts = "()[]{}";
+    static const char bkts[] = "()[]{}";
     out << bkts[bkts_cnt] << val_ << ": ";
     for (const auto& c: children()) {
         out << int(c.first) << "=";

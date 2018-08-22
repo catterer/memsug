@@ -24,15 +24,12 @@ TEST(Preftree, basic_mult) {
 
     for (int i = 0; i < n; i++)
         ASSERT_EQ(pt.find(i)->valref(), std::to_string(i));
-    pt.print(std::cout);
 }
 
 TEST(Preftree, basic_deep) {
     Preftree<std::string> pt{};
-    pt.emplace(1000, "1000");
-    pt.print(std::cout);
-    std::cerr << "\n";
-    ASSERT_EQ(pt.find(1000)->valref(), "1000");
+    pt.emplace(1234567890, "1234567890");
+    ASSERT_EQ(pt.find(1234567890)->valref(), "1234567890");
 }
 
 int main(int argc, char** argv) {
