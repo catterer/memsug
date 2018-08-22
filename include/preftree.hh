@@ -2,6 +2,7 @@
 #include <choose.h>
 
 #include <list>
+#include <functional>
 #include <map>
 #include <memory>
 #include <cassert>
@@ -55,6 +56,9 @@ public:
 
     void print(std::ostream&, unsigned) const;
 
+    using DepthCb = std::function<void(const Node&, unsigned level)>;
+    void pass_depth(DepthCb, unsigned) const;
+
 private:
     std::weak_ptr<Node<VAL>>    parent_{};
     Children                children_;
@@ -85,6 +89,9 @@ public:
     auto cend() const -> const_iterator { return {}; }
 
     void print(std::ostream& out) const { root_->print(out, 0); }
+
+    using DepthCb = std::function<void(const Node<VAL>&, unsigned level)>;
+    void pass_depth(DepthCb dcb) { return root_->pass_depth(dcb, 0); }
 
 private:
     std::shared_ptr<Node<VAL>> root_{std::make_shared<Node<VAL>>(Node<VAL>({}, {}))};
@@ -171,6 +178,13 @@ auto Preftree<VAL>::find(Key k)
     if (pi == p.end())
         return ti;
     return cend();
+}
+
+template<typename VAL>
+void Node<VAL>::pass_depth(DepthCb dcb, unsigned level) const {
+    dcb(*this, level);
+    for (const auto& c: children())
+        c.second->pass_depth(dcb, level+1);
 }
 
 template<typename VAL>

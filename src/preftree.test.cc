@@ -32,6 +32,30 @@ TEST(Preftree, basic_deep) {
     ASSERT_EQ(pt.find(1234567890)->valref(), "1234567890");
 }
 
+TEST(Preftree, randomized) {
+    Preftree<std::string> pt{};
+    std::set<std::string> alphasorted;
+    for (int i = 0; i < 1000; i++) {
+        int val = rand();
+        pt.emplace(val, std::to_string(val));
+        alphasorted.emplace(std::to_string(val));
+    }
+
+    std::list<std::string> l;
+    pt.pass_depth([&](const auto& node, unsigned lvl) {
+        if (not node.valref().empty())
+            l.emplace_back(node.valref());
+    });
+
+    auto lit = l.begin();
+    for (const auto& e: alphasorted) {
+        ASSERT_NE(lit, l.end());
+        ASSERT_EQ(*lit, e);
+        ++lit;
+    }
+    ASSERT_EQ(lit, l.end());
+}
+
 int main(int argc, char** argv) {
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
