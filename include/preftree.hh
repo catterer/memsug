@@ -7,6 +7,8 @@
 #include <memory>
 #include <cassert>
 #include <iostream>
+#include <cstring>
+#include <sstream>
 
 namespace preftree {
 
@@ -35,21 +37,24 @@ class Node {
 public:
     using Children = std::map<Digit, std::shared_ptr<Node<VAL>>>;
 
+    Node(std::weak_ptr<Node<VAL>> parent):
+        parent_{parent}
+    { }
+
     Node(std::weak_ptr<Node<VAL>> parent, VAL&& val):
         parent_{parent},
-        val_{std::move(val)}
+        val_{std::make_unique<VAL>(std::move(val))}
     { }
 
     auto parent() const -> const Node* { return parent_; }
     auto parent() -> Node* { return parent_; }
 
-    auto valref() const -> const VAL& { return val_; }
-    auto valref() -> VAL& { return val_; }
+    bool empty() const { return !val_; }
 
-    auto valptr() const -> const VAL* { return &val_; }
-    auto valptr() -> VAL* { return &val_; }
+    auto value() const -> const std::unique_ptr<VAL>& { return val_; }
+    auto value() -> std::unique_ptr<VAL>& { return val_; }
 
-    void val(VAL&& v) { val_ = std::move(v); }
+    void val_replace(std::unique_ptr<VAL>&& vp) { val_ = std::move(vp); }
 
     auto children() const -> const Children& { return children_; }
     auto children() -> Children& { return children_; }
@@ -62,7 +67,7 @@ public:
 private:
     std::weak_ptr<Node<VAL>>    parent_{};
     Children                children_;
-    VAL                     val_;
+    std::unique_ptr<VAL>    val_;
 };
 
 template<typename VAL>
@@ -73,7 +78,7 @@ public:
 
     Preftree() = default;
     auto emplace(Key, VAL&&) -> std::pair<iterator, bool>;
-    auto grow(iterator, const Path&, Path::const_iterator, VAL&&) -> iterator;
+    auto grow(iterator, const Path&, Path::const_iterator, std::unique_ptr<VAL>&&) -> iterator;
 
     auto find(Key) -> iterator;
     auto find(Key) const -> const_iterator;
@@ -94,7 +99,7 @@ public:
     void pass_depth(DepthCb dcb) { return root_->pass_depth(dcb, 0); }
 
 private:
-    std::shared_ptr<Node<VAL>> root_{std::make_shared<Node<VAL>>(Node<VAL>({}, {}))};
+    std::shared_ptr<Node<VAL>> root_{std::make_shared<Node<VAL>>(Node<VAL>({}))};
 };
 
 template<typename VAL>
@@ -104,22 +109,29 @@ auto Preftree<VAL>::emplace(Key k, VAL&& v)
     auto path = Path(k);
     auto pit = path.cbegin();
     auto ti = find_closest(path, pit);
-    if (pit == path.cend())
-        return std::make_pair(ti, false);
-    return std::make_pair(grow(ti, path, pit, std::move(v)), true);
+    auto vp = std::make_unique<VAL>(std::move(v));
+
+    if (pit == path.cend()) {
+        if (not ti->empty())
+            return std::make_pair(ti, false);
+        ti->val_replace(std::move(vp));
+        return std::make_pair(ti, true);
+    }
+
+    return std::make_pair(grow(ti, path, pit, std::move(vp)), true);
 }
 
 template<typename VAL>
-auto Preftree<VAL>::grow(iterator tit, const Path& path, Path::const_iterator pit, VAL&& v)
+auto Preftree<VAL>::grow(iterator tit, const Path& path, Path::const_iterator pit, std::unique_ptr<VAL>&& v)
     -> iterator
 {
     if (pit == path.cend()) {
-        tit->val(std::move(v));
+        tit->val_replace(std::move(v));
         return tit;
     }
 
     auto& children = tit->children();
-    auto pr = children.emplace(*pit, std::make_shared<Node<VAL>>(tit, VAL()));
+    auto pr = children.emplace(*pit, std::make_shared<Node<VAL>>(tit));
     assert(pr.second); // bug in find_closest
     return grow(pr.first->second, path, ++pit, std::move(v));
 }
@@ -188,15 +200,24 @@ void Node<VAL>::pass_depth(DepthCb dcb, unsigned level) const {
 }
 
 template<typename VAL>
-void Node<VAL>::print(std::ostream& out, unsigned bkts_cnt) const {
+void Node<VAL>::print(std::ostream& out, unsigned level) const {
     static const char bkts[] = "()[]{}";
-    out << bkts[bkts_cnt] << val_ << ": ";
+    const char* open = &bkts[(level * 2) % strlen(bkts)];
+    const char* close = open+1;
+
+    const auto prf = std::string(level * 2, ' ');
+
+    std::stringstream val_str{};
+    if (val_)
+        val_str << *val_;
+    else
+        val_str << "(empty)";
+
+    out << prf << val_str.str() << ": " << *open << "\n";
     for (const auto& c: children()) {
-        out << int(c.first) << "=";
-        c.second->print(out, (bkts_cnt+2) % (sizeof(bkts)-1));
-        out << " ";
+        c.second->print(out, level+1);
     }
-    out << bkts[bkts_cnt+1];
+    out << prf << *close << "\n";
 }
 
 }
