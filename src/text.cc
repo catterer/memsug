@@ -1,26 +1,46 @@
 #include <text.hh>
 #include <utf.hh>
+#include <locale>
 
 namespace text {
 
 auto Alphabet::classic_ru()
     -> Alphabet
 {
-    return Alphabet({
-                "зс",
-                "дт",
-                "н",
-                "м",
-                "ч",
-                "л",
-                "жш",
-                "кг",
-                "фв",
-                "рпб"
+    return Alphabet("ru_RU.utf-8", {
+                "ЗСзс",
+                "ДТдт",
+                "Нн",
+                "Мм",
+                "Чч",
+                "Лл",
+                "ЖШжш",
+                "КГкг",
+                "ФВфв",
+                "РПБрпб"
             });
 }
 
-Alphabet::Alphabet(std::vector<std::string> descriptor) {
+auto Alphabet::classic_en()
+    -> Alphabet
+{
+    return Alphabet("en_US.utf-8", {
+                "Oo",
+                "Aa",
+                "Bb",
+                "Cc",
+                "Dd",
+                "Ee",
+                "Ss",
+                "Gg",
+                "Hh",
+                "Nn"
+            });
+}
+
+Alphabet::Alphabet(const char* loc, std::vector<std::string> descriptor):
+    locale_{loc}
+{
     if (descriptor.size() != 10)
         throw std::invalid_argument("What are you?");
 

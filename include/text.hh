@@ -12,9 +12,13 @@ class Alphabet:
 {
 public:
     static auto classic_ru() -> Alphabet;
+    static auto classic_en() -> Alphabet;
 
-    Alphabet(std::vector<std::string> descriptor);
+    Alphabet(const char* locale, std::vector<std::string> descriptor);
     auto map(const std::string& word) -> optional<Key>;
+
+private:
+    const char* locale_{};
 };
 
 using WordId = uint32_t;
