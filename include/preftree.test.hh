@@ -2,7 +2,7 @@
 #include <string>
 #include <gtest/gtest.h>
 
-using namespace preftree;
+namespace preftree {
 
 TEST(Preftree, basic_one) {
     Preftree<std::string> pt{};
@@ -56,7 +56,4 @@ TEST(Preftree, randomized) {
     ASSERT_EQ(lit, l.end());
 }
 
-int main(int argc, char** argv) {
-    testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
 }

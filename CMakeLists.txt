@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.11)
 
 set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_CXX_FLAGS "-std=c++17 -Wall")
-project(preftree)
+project(memsug)
  
 include_directories(include ~/googletest/.install/include)
 link_directories(~/googletest/.install/lib64)
@@ -12,10 +12,10 @@ set(PREFTREE
         src/text.cc
         src/utf.cc)
 
-add_library(preftree ${PREFTREE})
+add_library(memsug ${PREFTREE})
 
-set(PREFTREE_TEST src/preftree.test.cc)
-add_executable(preftree_test ${PREFTREE_TEST})
-target_link_libraries(preftree_test preftree)
-Target_link_libraries(preftree_test gtest)
-Target_link_libraries(preftree_test pthread)
+set(TESTS src/tests.cc)
+add_executable(tests ${TESTS})
+target_link_libraries(tests memsug)
+Target_link_libraries(tests gtest)
+Target_link_libraries(tests pthread)
