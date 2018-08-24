@@ -31,6 +31,7 @@ private:
 };
 
 using Key = uint64_t;
+const Key invalid_key = UINT64_MAX;
 
 template<typename VAL>
 class Node {

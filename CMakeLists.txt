@@ -7,7 +7,11 @@ project(preftree)
 include_directories(include ~/googletest/.install/include)
 link_directories(~/googletest/.install/lib64)
  
-set(PREFTREE src/preftree.cc)
+set(PREFTREE
+        src/preftree.cc
+        src/text.cc
+        src/utf.cc)
+
 add_library(preftree ${PREFTREE})
 
 set(PREFTREE_TEST src/preftree.test.cc)
