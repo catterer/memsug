@@ -11,6 +11,8 @@ class Alphabet:
     public std::unordered_map<std::string, preftree::Digit>
 {
 public:
+    static auto classic_ru() -> Alphabet;
+
     Alphabet(std::vector<std::string> descriptor);
     auto map(const std::string& word) -> optional<Key>;
 };

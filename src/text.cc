@@ -3,6 +3,23 @@
 
 namespace text {
 
+auto Alphabet::classic_ru()
+    -> Alphabet
+{
+    return Alphabet({
+                "зс",
+                "дт",
+                "н",
+                "м",
+                "ч",
+                "л",
+                "жш",
+                "кг",
+                "фв",
+                "рпб"
+            });
+}
+
 Alphabet::Alphabet(std::vector<std::string> descriptor) {
     if (descriptor.size() != 10)
         throw std::invalid_argument("What are you?");

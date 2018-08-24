@@ -17,7 +17,7 @@ auto split(const std::string& in)
         else throw std::invalid_argument("invalid utf8 header byte");
 
         for (int i = 1; i < char_size; i++)
-            if ((*cursor & 0xC0) != 0x80)
+            if ((cursor[i] & 0xC0) != 0x80)
                 throw std::invalid_argument("invalid utf8 sequence");
 
         result.emplace_back(std::string(cursor, char_size));

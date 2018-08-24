@@ -1,4 +1,5 @@
 #include <preftree.test.hh>
+#include <text.test.hh>
 
 int main(int argc, char** argv) {
     testing::InitGoogleTest(&argc, argv);
