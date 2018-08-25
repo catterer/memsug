@@ -19,4 +19,19 @@ TEST(Alphabet, map_ru_case) {
 TEST(Alphabet, map_en_case) {
     ASSERT_EQ(*Alphabet::classic_en().map("ANONIMITY"), 1909LU);
 }
+
+TEST(Dict, update) {
+    Dict d(Alphabet::classic_ru());
+    d.update(ROOT "/misc/don_short.txt");
+    auto check = [&d] (const std::string& w) {
+        auto ei = d.idxstr().find(w);
+        ASSERT_NE(ei, d.idxstr().end());
+        ASSERT_EQ(ei->second->word().str, w);
+    };
+    check("батюшка");
+    check("Наполнена");
+    check("копытами");
+    check("Посередь");
+}
+
 }

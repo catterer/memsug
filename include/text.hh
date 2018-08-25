@@ -27,6 +27,8 @@ struct Word {
     WordId      id;
     Key         key;
     std::string str;
+
+    friend std::ostream& operator<<(std::ostream&, const Word&);
 };
 
 class DictEntry {
@@ -42,18 +44,20 @@ class Dict:
     public std::unordered_map<WordId, std::shared_ptr<DictEntry>>
 {
 public:
+    using Idxstr = std::unordered_map<std::string, std::shared_ptr<DictEntry>>;
     Dict(const Alphabet& ab): alphabet_{ab} {}
     void update(const std::string& textfile);
     void insert(Word&&);
     void consider_sentence(const std::string&);
     void consider_word(const std::string&);
+    auto idxstr() const -> const Idxstr& { return idxstr_; }
 
 private:
     static const size_t max_file_size_ = 100*1024*1024;
 
     Alphabet alphabet_;
     WordId last_id_{0};
-    std::unordered_map<std::string, std::shared_ptr<DictEntry>>     idxstr_;
+    Idxstr idxstr_;
 };
 
 }

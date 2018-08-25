@@ -4,7 +4,7 @@ set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_CXX_FLAGS "-std=c++17 -Wall")
 project(memsug)
  
-add_definitions(-DROOT=${CMAKE_HOME_DIRECTORY})
+add_definitions(-DROOT="${CMAKE_HOME_DIRECTORY}")
 
 include_directories(include ~/googletest/.install/include)
 link_directories(~/googletest/.install/lib64)

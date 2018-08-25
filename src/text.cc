@@ -67,6 +67,11 @@ auto Alphabet::map(const std::string& word)
     return {key};
 }
 
+std::ostream& operator<<(std::ostream& out, const Word& w) {
+    out << w.id << ":" << w.str << "=" << w.key;
+    return out;
+}
+
 void Dict::update(const std::string& textfile) {
     auto f = std::shared_ptr<FILE>(::fopen(textfile.c_str(), "r"), [] (FILE* f) { if (f) fclose(f); });
     if (!f)
