@@ -1,10 +1,10 @@
 #pragma once
 #include <preftree.hh>
-#include <optional>
+#include <optional.hh>
+#include <unordered_map>
 
 namespace text {
 
-using std::optional;
 using preftree::Key;
 
 class Alphabet:
