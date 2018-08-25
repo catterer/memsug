@@ -67,9 +67,43 @@ auto Alphabet::map(const std::string& word)
     return {key};
 }
 
+auto Word::dump() const
+    -> save::blob
+{
+    save::blob res{};
+    res.put("id", id);
+    res.put("key", key);
+    res.put("str", str);
+    return res;
+}
+
+void Word::load(const save::blob& root) {
+    id = root.get<WordId>("id");
+    key = root.get<Key>("key");
+    str = root.get<std::string>("str");
+}
+
 std::ostream& operator<<(std::ostream& out, const Word& w) {
     out << w.id << ":" << w.str << "=" << w.key;
     return out;
+}
+
+auto Dict::dump() const
+    -> save::blob
+{
+    save::blob res{};
+
+    save::blob entries{};
+    for (const auto& p: *this)
+        entries.add_child(std::to_string(p.first), p.second->dump());
+    res.add_child("entries", std::move(entries));
+
+    return res;
+}
+
+void Dict::load(const save::blob& root) {
+    for (const auto& p: root.get_child("entries"))
+        insert(Word(p.second));
 }
 
 void Dict::update(const std::string& textfile) {
@@ -78,6 +112,11 @@ void Dict::update(const std::string& textfile) {
         throw std::runtime_error("Failed to open dict file");
 
     auto buf = std::shared_ptr<char>((char*)malloc(max_file_size_), [] (char* p) { free(p); });
+    ::fread(buf.get(), 1, max_file_size_, f.get());
+    if (ferror(f.get()))
+        throw std::runtime_error("Failed to read file");
+    if (!feof(f.get()))
+        throw std::runtime_error("File too large");
 
     char* sp_s = NULL;
     const char* delim_s = ".?!;\"'";
@@ -87,7 +126,7 @@ void Dict::update(const std::string& textfile) {
 
 void Dict::consider_sentence(const std::string& stnc_) {
     char* sp_w = NULL;
-    const char* delim_w = " \t,:-+=()";
+    const char* delim_w = " \t\n\r,:-+=()";
     auto stnc = std::shared_ptr<char>(strdup(stnc_.c_str()), [] (char* p) { free(p); });
     for (auto w = strtok_r(stnc.get(), delim_w, &sp_w); w; w = strtok_r(NULL, delim_w, &sp_w))
         consider_word(w);
