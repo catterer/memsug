@@ -4,6 +4,14 @@
 
 namespace preftree {
 
+TEST(Preftree, emplace) {
+    Preftree<std::string> pt{};
+    auto p = pt.emplace("1", "1");
+    ASSERT_EQ(p.second, true);
+    p = pt.emplace("1", "1");
+    ASSERT_EQ(p.second, false);
+}
+
 TEST(Preftree, basic_one) {
     Preftree<std::string> pt{};
     pt.emplace("1", "1");
