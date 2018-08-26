@@ -12,26 +12,8 @@
 
 namespace preftree {
 
-using Digit = uint8_t;
-class Path: public std::list<Digit> {
-public:
-    Path(uint64_t val):
-        key_{val}
-    {
-        if (!val)
-            push_front(0);
-
-        for(; val; val /= 10)
-            push_front(val%10);
-    }
-
-    auto key() const -> uint64_t { return key_; }
-private:
-    uint64_t key_;
-};
-
-using Key = uint64_t;
-const Key invalid_key = UINT64_MAX;
+using Digit = char;
+using Path = std::string;
 
 template<typename VAL>
 class Node {
@@ -78,11 +60,11 @@ public:
     using const_iterator = const std::shared_ptr<Node<VAL>>;
 
     Preftree() = default;
-    auto emplace(Key, VAL&&) -> std::pair<iterator, bool>;
+    auto emplace(const Path&, VAL&&) -> std::pair<iterator, bool>;
     auto grow(iterator, const Path&, Path::const_iterator, std::unique_ptr<VAL>&&) -> iterator;
 
-    auto find(Key) -> iterator;
-    auto find(Key) const -> const_iterator;
+    auto find(const Path&) -> iterator;
+    auto find(const Path&) const -> const_iterator;
 
     auto find_closest(const Path&, Path::const_iterator&) -> iterator;
     auto find_closest(const Path&, Path::const_iterator&) const -> const_iterator;
@@ -104,10 +86,9 @@ private:
 };
 
 template<typename VAL>
-auto Preftree<VAL>::emplace(Key k, VAL&& v)
+auto Preftree<VAL>::emplace(const Path& path, VAL&& v)
     -> std::pair<iterator, bool>
 {
-    auto path = Path(k);
     auto pit = path.cbegin();
     auto ti = find_closest(path, pit);
     auto vp = std::make_unique<VAL>(std::move(v));
@@ -170,10 +151,9 @@ auto Preftree<VAL>::find_closest(const Path& p, Path::const_iterator& pit, const
 }
 
 template<typename VAL>
-auto Preftree<VAL>::find(Key k) const
+auto Preftree<VAL>::find(const Path& p) const
     -> const_iterator
 {
-    Path p(k);
     auto pi = p.begin();
     auto ti = find_closest(p, pi, cbegin());
     if (pi == p.end())
@@ -182,10 +162,9 @@ auto Preftree<VAL>::find(Key k) const
 }
 
 template<typename VAL>
-auto Preftree<VAL>::find(Key k)
+auto Preftree<VAL>::find(const Path& p)
     -> iterator
 {
-    Path p(k);
     auto pi = p.cbegin();
     auto ti = find_closest(p, pi);
     if (pi == p.end())

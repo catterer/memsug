@@ -49,22 +49,19 @@ Alphabet::Alphabet(const char* loc, std::vector<std::string> descriptor):
             (*this)[c] = dig;
 }
 
-auto Alphabet::map(const std::string& word)
-    -> optional<Key>
+auto Alphabet::map(const std::string& word) const
+    -> Number
 {
-    Key key = 0;
+    Number num;
     for (auto c: utf::split(word)) {
         auto pi = find(c);
         if (pi == end())
             continue;
-        if (key * 10 < key)
-            return {};
 
-        key *= 10;
-        key += pi->second;
+        num += 0x30 + pi->second;
     }
 
-    return {key};
+    return num;
 }
 
 auto Word::dump() const
@@ -72,19 +69,19 @@ auto Word::dump() const
 {
     save::blob res{};
     res.put("id", id);
-    res.put("key", key);
+    res.put("num", num);
     res.put("str", str);
     return res;
 }
 
 void Word::load(const save::blob& root) {
     id = root.get<WordId>("id");
-    key = root.get<Key>("key");
+    num = root.get<Number>("num");
     str = root.get<std::string>("str");
 }
 
 std::ostream& operator<<(std::ostream& out, const Word& w) {
-    out << w.id << ":" << w.str << "=" << w.key;
+    out << w.id << ":" << w.str << "=" << w.num;
     return out;
 }
 
@@ -134,13 +131,11 @@ void Dict::consider_sentence(const std::string& stnc_) {
 
 void Dict::consider_word(const std::string& w) {
     auto k = alphabet_.map(w);
-    if (!k)
-        return;
     std::string word_str(w);
     if (idxstr_.count(word_str))
         return;
 
-    return insert(Word{last_id_++, *k, w});
+    return insert(Word{last_id_++, k, w});
 }
 
 void Dict::insert(Word&& w) {

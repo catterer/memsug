@@ -6,7 +6,7 @@
 
 namespace text {
 
-using preftree::Key;
+using Number = preftree::Path;
 
 class Alphabet:
     public std::unordered_map<std::string, preftree::Digit>
@@ -16,7 +16,7 @@ public:
     static auto classic_en() -> Alphabet;
 
     Alphabet(const char* locale, std::vector<std::string> descriptor);
-    auto map(const std::string& word) -> optional<Key>;
+    auto map(const std::string& word) const -> Number;
 
 private:
     const char* locale_{};
@@ -26,8 +26,8 @@ using WordId = uint32_t;
 
 struct Word: public save::serializable {
     Word(const save::blob& root) { load(root); }
-    Word(WordId id, Key key, const std::string& str):
-        id{id}, key{key}, str{str} {}
+    Word(WordId id, const Number& number, const std::string& str):
+        id{id}, num{number}, str{str} {}
 
     auto dump() const -> save::blob override;
     void load(const save::blob&) override;
@@ -35,7 +35,7 @@ struct Word: public save::serializable {
     friend std::ostream& operator<<(std::ostream&, const Word&);
 
     WordId      id;
-    Key         key;
+    Number      num;
     std::string str;
 };
 

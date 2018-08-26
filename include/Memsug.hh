@@ -13,6 +13,7 @@ public:
 
 private:
     Suger(text::Dict&& d): dict_{std::move(d)} {}
+
     text::Dict dict_;
 };
 
