@@ -7,21 +7,23 @@ namespace preftree {
 TEST(Preftree, emplace) {
     Preftree<std::string> pt{};
     auto p = pt.emplace("1", "1");
+    ASSERT_EQ(p.first->value(), "1");
     ASSERT_EQ(p.second, true);
-    p = pt.emplace("1", "1");
+    p = pt.emplace("1", "2");
+    ASSERT_EQ(p.first->value(), "1");
     ASSERT_EQ(p.second, false);
 }
 
 TEST(Preftree, basic_one) {
     Preftree<std::string> pt{};
     pt.emplace("1", "1");
-    ASSERT_EQ(*pt.find("1")->value(), "1");
+    ASSERT_EQ(pt.find("1")->value(), "1");
 }
 
 TEST(Preftree, zero) {
     Preftree<std::string> pt{};
     pt.emplace("0", "0");
-    ASSERT_EQ(*pt.find("0")->value(), "0");
+    ASSERT_EQ(pt.find("0")->value(), "0");
 }
 
 TEST(Preftree, basic_mult) {
@@ -31,13 +33,13 @@ TEST(Preftree, basic_mult) {
         pt.emplace(std::to_string(i), std::to_string(i));
 
     for (int i = 0; i < n; i++)
-        ASSERT_EQ(*pt.find(std::to_string(i))->value(), std::to_string(i));
+        ASSERT_EQ(pt.find(std::to_string(i))->value(), std::to_string(i));
 }
 
 TEST(Preftree, basic_deep) {
     Preftree<std::string> pt{};
     pt.emplace("1234567890", "1234567890");
-    ASSERT_EQ(*pt.find("1234567890")->value(), "1234567890");
+    ASSERT_EQ(pt.find("1234567890")->value(), "1234567890");
 }
 
 TEST(Preftree, randomized) {
@@ -52,7 +54,7 @@ TEST(Preftree, randomized) {
     std::list<std::string> l;
     pt.pass_depth([&](const auto& node, unsigned lvl) {
         if (not node.empty())
-            l.emplace_back(*node.value());
+            l.emplace_back(node.value());
     });
 
     auto lit = l.begin();

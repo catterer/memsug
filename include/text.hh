@@ -1,15 +1,13 @@
 #pragma once
-#include <preftree.hh>
-#include <optional.hh>
 #include <save.hh>
 #include <unordered_map>
 
 namespace text {
 
-using Number = preftree::Path;
+using Number = std::string;
 
 class Alphabet:
-    public std::unordered_map<std::string, preftree::Digit>
+    public std::unordered_map<std::string, uint8_t>
 {
 public:
     static auto classic_ru() -> Alphabet;

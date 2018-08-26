@@ -12,6 +12,7 @@ link_directories(~/googletest/.install/lib64)
 set(PREFTREE
         src/preftree.cc
         src/text.cc
+        src/memsug.cc
         src/utf.cc)
 
 add_library(memsug ${PREFTREE})

@@ -34,8 +34,8 @@ public:
 
     bool empty() const { return !val_; }
 
-    auto value() const -> const std::unique_ptr<VAL>& { return val_; }
-    auto value() -> std::unique_ptr<VAL>& { return val_; }
+    auto value() const -> const VAL& { return *val_; }
+    auto value() -> VAL& { return *val_; }
 
     void val_replace(std::unique_ptr<VAL>&& vp) { val_ = std::move(vp); }
 

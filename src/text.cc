@@ -44,7 +44,7 @@ Alphabet::Alphabet(const char* loc, std::vector<std::string> descriptor):
     if (descriptor.size() != 10)
         throw std::invalid_argument("What are you?");
 
-    for (preftree::Digit dig = 0; dig < descriptor.size(); ++dig)
+    for (uint8_t dig = 0; dig < descriptor.size(); ++dig)
         for (auto c: utf::split(descriptor[dig]))
             (*this)[c] = dig;
 }
