@@ -6,8 +6,11 @@ project(memsug)
  
 add_definitions(-DROOT="${CMAKE_HOME_DIRECTORY}")
 
+# office
 include_directories(include ~/googletest/.install/include)
 link_directories(~/googletest/.install/lib64)
+include_directories(include ~/boost_install/include)
+link_directories(~/boost_install/lib)
  
 set(PREFTREE
         src/preftree.cc
