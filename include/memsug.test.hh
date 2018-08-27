@@ -1,5 +1,6 @@
 #pragma once
 #include <memsug.hh>
+#include <numeric>
 
 namespace memsug {
 
@@ -20,10 +21,12 @@ TEST_F(Donsug, simple) {
 
 TEST_F(Donsug, mwl) {
     auto res = suger_->maximize_word_length("12");
-    ASSERT_EQ(res.size(), 1);
-    ASSERT_EQ(res.begin()->size(), 2);
-    ASSERT_EQ(*res.begin(), "Дон");
-    ASSERT_EQ(*res.begin(), "дна");
+    ASSERT_EQ(res->size(), 1U);
+    const auto vs = *res->begin();
+    ASSERT_EQ(vs.size(), 4U);
+    auto sorted = std::accumulate(vs.begin(), vs.end(), std::set<std::string>(),
+            [] (auto&& accum, const auto& word) { accum.emplace(word); return std::move(accum); });
+    ASSERT_EQ(sorted, (std::set<std::string>{"Дона", "Дону", "Дон", "дна"}));
 }
 
 }

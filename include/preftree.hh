@@ -74,6 +74,7 @@ public:
     auto cbegin() const -> const_iterator { return root_; }
 
     auto end() -> iterator { return {}; }
+    auto end() const -> const_iterator { return {}; }
     auto cend() const -> const_iterator { return {}; }
 
     void print(std::ostream& out) const { root_->print(out, 0); }

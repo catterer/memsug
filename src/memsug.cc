@@ -20,23 +20,24 @@ auto Suger::suggest_word(const text::Number& num) const
     if (sms == tree_.end())
         return {};
     assert(!sms->value().empty());
-    return {dict_[sms->value().begin()->second]->word().str};
+    return {dict_.at(sms->value().begin()->second)->word().str};
 }
 
 auto Suger::maximize_word_length(const text::Number& num) const
-    -> optional<std::vector<std::string>>
+    -> optional<std::vector<Variants>>
 {
-    std::vector<std::string> res;
+    std::vector<Variants> res;
     auto pi = num.begin();
-    for (auto ti = tree_.find_closest(num, pi);
-            pi != num.end and ti != tree_.end();
-            ti = tree_.find_closest(num, pi))
-    {
+    do {
+        auto ti = tree_.find_closest(num, pi);
+        if (ti == tree_.end())
+            return {};
+
         Variants vs{};
         for (const auto& p: ti->value())
-            vs.emplace_back(dict_[p.second]->word().str());
+            vs.emplace_back(dict_.at(p.second)->word().str);
         res.emplace_back(std::move(vs));
-    }
+    } while (pi != num.end());
 
     return res;
 }
