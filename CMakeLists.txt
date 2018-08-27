@@ -20,8 +20,13 @@ set(PREFTREE
 
 add_library(memsug ${PREFTREE})
 
-set(TESTS src/tests.cc)
-add_executable(tests ${TESTS})
+add_executable(tests src/tests.cc)
 target_link_libraries(tests memsug)
 Target_link_libraries(tests gtest)
 Target_link_libraries(tests pthread)
+
+add_executable(memsugtool src/main.cc)
+target_link_libraries(memsugtool memsug)
+Target_link_libraries(memsugtool gtest)
+Target_link_libraries(memsugtool pthread)
+Target_link_libraries(memsugtool boost_program_options)

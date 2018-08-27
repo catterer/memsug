@@ -12,6 +12,7 @@ class Alphabet:
 public:
     static auto classic_ru() -> Alphabet;
     static auto classic_en() -> Alphabet;
+    static auto by_name(const std::string&) -> Alphabet;
 
     Alphabet(const char* locale, std::vector<std::string> descriptor);
     auto map(const std::string& word) const -> Number;
