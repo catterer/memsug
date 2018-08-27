@@ -14,7 +14,7 @@ auto Alphabet::classic_ru()
                 "Мм",
                 "Чч",
                 "Лл",
-                "ЖШжш",
+                "ЖШЩжшщ",
                 "КГкг",
                 "ФВфв",
                 "РПБрпб"
@@ -36,6 +36,16 @@ auto Alphabet::classic_en()
                 "Hh",
                 "Nn"
             });
+}
+
+auto Alphabet::by_name(const std::string& n)
+    -> Alphabet
+{
+    if (n == "ru")
+        return Alphabet::classic_ru();
+    if (n == "en")
+        return Alphabet::classic_en();
+    throw std::runtime_error("Unknown alphabet name");
 }
 
 Alphabet::Alphabet(const char* loc, std::vector<std::string> descriptor):
