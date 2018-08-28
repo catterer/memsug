@@ -13,7 +13,7 @@ namespace memsug {
 using Weight = uint32_t;
 using ::text::WordId;
 
-using Synonyms = std::multimap<Weight, WordId>;
+using Synonyms = std::vector<WordId>;
 using Variants = std::vector<std::string>;
 
 class Suger: public std::enable_shared_from_this<Suger> {

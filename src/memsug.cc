@@ -7,9 +7,9 @@ Suger::Suger(text::Dict&& d):
 {
     for (const auto& p: dict_) {
         const auto& word = p.second->word();
-        auto tp = tree_.emplace(word.num, Synonyms{{1, word.id}});
+        auto tp = tree_.emplace(word.num, Synonyms{word.id});
         if (!tp.second)
-            tp.first->value().emplace(1, word.id);
+            tp.first->value().emplace_back(word.id);
     }
 }
 
@@ -20,7 +20,7 @@ auto Suger::suggest_word(const text::Number& num) const
     if (sms == tree_.end())
         return {};
     assert(!sms->value().empty());
-    return {dict_.at(sms->value().begin()->second)->word().str};
+    return {dict_.at(*sms->value().begin())->word().str};
 }
 
 auto Suger::maximize_word_length(const text::Number& num) const
@@ -34,8 +34,8 @@ auto Suger::maximize_word_length(const text::Number& num) const
             return {};
 
         Variants vs{};
-        for (const auto& p: ti->value())
-            vs.emplace_back(dict_.at(p.second)->word().str);
+        for (const auto& wid: ti->value())
+            vs.emplace_back(dict_.at(wid)->word().str);
         res.emplace_back(std::move(vs));
     } while (pi != num.end());
 
