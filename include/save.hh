@@ -27,4 +27,10 @@ public:
     serializable() = default;
 };
 
+template<typename T>
+T dumpload(T&& val) {
+    blob b = val.dump();
+    return T(b);
+}
+
 }

@@ -7,18 +7,20 @@ namespace text {
 using Number = std::string;
 
 class Alphabet:
-    public std::unordered_map<std::string, uint8_t>
+    public std::unordered_map<std::string, uint8_t>,
+    public save::serializable
 {
 public:
     static auto classic_ru() -> Alphabet;
     static auto classic_en() -> Alphabet;
     static auto by_name(const std::string&) -> Alphabet;
 
-    Alphabet(const char* locale, std::vector<std::string> descriptor);
+    Alphabet(const save::blob& b) { load(b); }
+    Alphabet(std::vector<std::string>&& descriptor);
     auto map(const std::string& word) const -> Number;
 
-private:
-    const char* locale_{};
+    auto dump() const -> save::blob override;
+    void load(const save::blob&) override;
 };
 
 using WordId = uint32_t;

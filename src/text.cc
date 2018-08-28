@@ -2,12 +2,14 @@
 #include <utf.hh>
 #include <locale>
 
+#include <boost/lexical_cast.hpp>
+
 namespace text {
 
 auto Alphabet::classic_ru()
     -> Alphabet
 {
-    return Alphabet("ru_RU.utf-8", {
+    return Alphabet({
                 "ЗСзс",
                 "ДТдт",
                 "Нн",
@@ -24,7 +26,7 @@ auto Alphabet::classic_ru()
 auto Alphabet::classic_en()
     -> Alphabet
 {
-    return Alphabet("en_US.utf-8", {
+    return Alphabet({
                 "Oo",
                 "Aa",
                 "Bb",
@@ -48,15 +50,31 @@ auto Alphabet::by_name(const std::string& n)
     throw std::runtime_error("Unknown alphabet name");
 }
 
-Alphabet::Alphabet(const char* loc, std::vector<std::string> descriptor):
-    locale_{loc}
-{
+Alphabet::Alphabet(std::vector<std::string>&& descriptor) {
     if (descriptor.size() != 10)
         throw std::invalid_argument("What are you?");
 
     for (uint8_t dig = 0; dig < descriptor.size(); ++dig)
         for (auto c: utf::split(descriptor[dig]))
             (*this)[c] = dig;
+}
+
+auto Alphabet::dump() const
+    -> save::blob
+{
+    save::blob mapping{};
+    for (const auto& p: *this)
+        mapping.put(p.first, p.second);
+
+    save::blob res;
+    res.add_child("mapping", std::move(mapping));
+    return res;
+}
+
+void Alphabet::load(const save::blob& in) {
+    const auto& mapping = in.get_child("mapping");
+    for (const auto& p: mapping)
+        emplace(p.first, mapping.get<int>(p.first));
 }
 
 auto Alphabet::map(const std::string& word) const
