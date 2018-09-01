@@ -145,14 +145,14 @@ void Dict::update(const std::string& textfile, AdjMatrix& m) {
         throw std::runtime_error("File too large");
 
     char* sp_s = NULL;
-    const char* delim_s = ".?!;\"'";
+    const char* delim_s = ".?!;\"',:()";
     for (auto stnc = strtok_r(buf.get(), delim_s, &sp_s); stnc; stnc = strtok_r(NULL, delim_s, &sp_s))
         consider_sentence(stnc, m);
 }
 
 void Dict::consider_sentence(const std::string& stnc_, AdjMatrix& m) {
     char* sp_w = NULL;
-    const char* delim_w = " \t\n\r,:+=()";
+    const char* delim_w = " \t\n\r+=-";
     auto stnc = std::shared_ptr<char>(strdup(stnc_.c_str()), [] (char* p) { free(p); });
     optional<WordId> prev_id;
     for (auto w = strtok_r(stnc.get(), delim_w, &sp_w); w; w = strtok_r(NULL, delim_w, &sp_w)) {

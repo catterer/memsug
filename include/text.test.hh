@@ -67,7 +67,7 @@ TEST_F(DictDonShort, adjmx) {
     ASSERT_TRUE(is_adj("славная", "землюшка"));
     ASSERT_TRUE(is_adj("землюшка", "лошадиными"));
     ASSERT_TRUE(is_adj("землюшка", "казацкими"));
-    ASSERT_TRUE(is_adj("Дона", "бела"));
+    ASSERT_TRUE(is_adj("Украшен", "то"));
 
     ASSERT_FALSE(is_adj("землюшка", "молодыми"));
     ASSERT_FALSE(is_adj("Дон", "Ой"));
