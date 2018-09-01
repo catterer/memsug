@@ -37,8 +37,9 @@ int main(int argc, char** argv) try {
     if (!vm.count("alphabet"))
         throw std::logic_error("alphabet not specified");
 
+    text::AdjMatrix m;
     text::Dict dict(text::Alphabet::by_name(alphabet_name));
-    dict.update(textfile);
+    dict.update(textfile, m);
 
     auto suger = memsug::Suger::create(std::move(dict));
 

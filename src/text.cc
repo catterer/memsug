@@ -1,5 +1,6 @@
 #include <text.hh>
 #include <utf.hh>
+#include <optional.hh>
 #include <locale>
 
 #include <boost/lexical_cast.hpp>
@@ -131,7 +132,7 @@ void Dict::load(const save::blob& root) {
         insert(Word(p.second));
 }
 
-void Dict::update(const std::string& textfile) {
+void Dict::update(const std::string& textfile, AdjMatrix& m) {
     auto f = std::shared_ptr<FILE>(::fopen(textfile.c_str(), "r"), [] (FILE* f) { if (f) fclose(f); });
     if (!f)
         throw std::runtime_error("Failed to open dict file");
@@ -146,24 +147,30 @@ void Dict::update(const std::string& textfile) {
     char* sp_s = NULL;
     const char* delim_s = ".?!;\"'";
     for (auto stnc = strtok_r(buf.get(), delim_s, &sp_s); stnc; stnc = strtok_r(NULL, delim_s, &sp_s))
-        consider_sentence(stnc);
+        consider_sentence(stnc, m);
 }
 
-void Dict::consider_sentence(const std::string& stnc_) {
+void Dict::consider_sentence(const std::string& stnc_, AdjMatrix& m) {
     char* sp_w = NULL;
-    const char* delim_w = " \t\n\r,:-+=()";
+    const char* delim_w = " \t\n\r,:+=()";
     auto stnc = std::shared_ptr<char>(strdup(stnc_.c_str()), [] (char* p) { free(p); });
-    for (auto w = strtok_r(stnc.get(), delim_w, &sp_w); w; w = strtok_r(NULL, delim_w, &sp_w))
-        consider_word(w);
+    optional<WordId> prev_id;
+    for (auto w = strtok_r(stnc.get(), delim_w, &sp_w); w; w = strtok_r(NULL, delim_w, &sp_w)) {
+        std::string word = w;
+        auto new_id = consider_word(word);
+        if (prev_id)
+            m[*prev_id].emplace(new_id);
+        prev_id.emplace(new_id);
+    }
 }
 
-void Dict::consider_word(const std::string& w) {
-    auto k = alphabet_.map(w);
-    std::string word_str(w);
-    if (idxstr_.count(word_str))
-        return;
+WordId Dict::consider_word(const std::string& w) {
+    auto i = idxstr_.find(w);
+    if (i != idxstr_.end())
+        return i->second->word().id;
 
-    return insert(Word{last_id_++, k, w});
+    insert(Word{last_id_, alphabet_.map(w), w});
+    return last_id_++;
 }
 
 void Dict::insert(Word&& w) {

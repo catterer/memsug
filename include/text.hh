@@ -1,6 +1,8 @@
 #pragma once
 #include <save.hh>
 #include <unordered_map>
+#include <set>
+#include <vector>
 
 namespace text {
 
@@ -40,6 +42,11 @@ struct Word: public save::serializable {
     std::string str;
 };
 
+class AdjMatrix: public std::unordered_map<WordId, std::set<WordId>> {
+public:
+    AdjMatrix() = default;
+};
+
 class DictEntry: public save::serializable{
 public:
     DictEntry(const Word& w): word_{w} {}
@@ -62,10 +69,10 @@ public:
     auto dump() const -> save::blob override;
     void load(const save::blob&) override;
 
-    void update(const std::string& textfile);
+    void update(const std::string& textfile, AdjMatrix&);
     void insert(Word&&);
-    void consider_sentence(const std::string&);
-    void consider_word(const std::string&);
+    void consider_sentence(const std::string&, AdjMatrix&);
+    auto consider_word(const std::string&) -> WordId;
     auto idxstr() const -> const Idxstr& { return idxstr_; }
 
 private:

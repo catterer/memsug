@@ -7,8 +7,9 @@ namespace memsug {
 class Donsug: public ::testing::Test {
 public:
     Donsug() {
+        text::AdjMatrix m;
         text::Dict d{text::Alphabet::classic_ru()};
-        d.update(ROOT "/misc/don_short.txt");
+        d.update(ROOT "/misc/don_short.txt", m);
         suger_ = Suger::create(std::move(d));
     }
 
