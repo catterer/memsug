@@ -117,6 +117,7 @@ std::ostream& operator<<(std::ostream& out, const Word& w) {
 auto Dict::dump() const
     -> save::blob
 {
+    // XXX BUG: alphabet not dumped
     save::blob res{};
 
     save::blob entries{};
@@ -128,6 +129,8 @@ auto Dict::dump() const
 }
 
 void Dict::load(const save::blob& root) {
+    // XXX BUG: last_id not restored
+    // XXX BUG: alphabet not restored
     for (const auto& p: root.get_child("entries"))
         insert(Word(p.second));
 }
