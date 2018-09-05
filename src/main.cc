@@ -5,14 +5,14 @@
 namespace po = boost::program_options;
 
 int main(int argc, char** argv) try {
-    std::string textfile;
+    std::vector<std::string> textfiles;
     std::string alphabet_name;
     std::vector<std::string> numbers;
 
     po::options_description opts("Allowed options");
     opts.add_options()
         ("help,h", "print usage message")
-        ("text,t", po::value(&textfile), "path to file with text to build dictionary on")
+        ("text,t", po::value(&textfiles), "path to file with text to build dictionary on")
         ("alphabet,a", po::value(&alphabet_name), "alphabet to use: ru/en")
         ("number", po::value(&numbers), "input file");
 
@@ -39,7 +39,8 @@ int main(int argc, char** argv) try {
 
     text::AdjMatrix m;
     text::Dict dict(text::Alphabet::by_name(alphabet_name));
-    dict.update(textfile, m);
+    for (const auto f: textfiles)
+        dict.update(f, m);
 
     auto suger = memsug::Suger::create(std::move(dict));
 
@@ -53,7 +54,7 @@ int main(int argc, char** argv) try {
 
         for (const auto& v: *res) {
             for (const auto& w: v)
-                std::cout << w << " ";
+                std::cout << suger->dict().at(w)->word().str << " ";
             std::cout << "\n";
         }
     }

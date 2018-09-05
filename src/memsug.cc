@@ -24,19 +24,16 @@ auto Suger::suggest_word(const text::Number& num) const
 }
 
 auto Suger::maximize_word_length(const text::Number& num) const
-    -> optional<std::vector<Variants>>
+    -> optional<std::vector<Synonyms>>
 {
-    std::vector<Variants> res;
+    std::vector<Synonyms> res;
     auto pi = num.begin();
     do {
         auto ti = tree_.find_closest(num, pi);
         if (ti == tree_.end())
             return {};
 
-        Variants vs{};
-        for (const auto& wid: ti->value())
-            vs.emplace_back(dict_.at(wid)->word().str);
-        res.emplace_back(std::move(vs));
+        res.emplace_back(ti->value());
     } while (pi != num.end());
 
     return res;

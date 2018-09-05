@@ -14,7 +14,6 @@ using Weight = uint32_t;
 using ::text::WordId;
 
 using Synonyms = std::vector<WordId>;
-using Variants = std::vector<std::string>;
 
 class Suger: public std::enable_shared_from_this<Suger> {
 public:
@@ -24,7 +23,8 @@ public:
     }
 
     auto suggest_word(const text::Number&) const -> optional<std::string>;
-    auto maximize_word_length(const text::Number&) const -> optional<std::vector<Variants>>;
+    auto maximize_word_length(const text::Number&) const -> optional<std::vector<Synonyms>>;
+    auto dict() const -> const text::Dict& { return dict_; }
 
 private:
     Suger(text::Dict&&);
