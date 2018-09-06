@@ -23,7 +23,7 @@ auto Suger::suggest_word(const text::Number& num) const
     return {dict_.at(*sms->value().begin())->word().str};
 }
 
-auto Suger::maximize_word_length(const text::Number& num) const
+auto Suger::maximize_word_length(const text::Number& num, int shorten_first_word) const
     -> optional<std::vector<Synonyms>>
 {
     std::vector<Synonyms> res;
@@ -31,6 +31,12 @@ auto Suger::maximize_word_length(const text::Number& num) const
     do {
         auto ti = tree_.find_closest(num, pi);
         if (ti == tree_.end())
+            return {};
+
+        for (; shorten_first_word && pi != num.begin(); shorten_first_word--, pi--)
+            ti = ti->parent();
+
+        if (pi == num.begin())
             return {};
 
         res.emplace_back(ti->value());

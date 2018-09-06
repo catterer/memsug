@@ -29,8 +29,8 @@ public:
         val_{std::make_unique<VAL>(std::move(val))}
     { }
 
-    auto parent() const -> const Node* { return parent_; }
-    auto parent() -> Node* { return parent_; }
+    auto parent() const -> const std::shared_ptr<Node<VAL>> { return parent_.lock(); }
+    auto parent() -> const std::shared_ptr<Node<VAL>> { return parent_.lock(); }
 
     bool empty() const { return !val_; }
 

@@ -18,6 +18,7 @@ int main(int argc, char** argv) try {
     std::string alphabet_name;
     std::vector<std::string> numbers;
     std::string dictfile;
+    int shorten = 0;
 
     po::options_description opts("Allowed options");
     opts.add_options()
@@ -25,6 +26,7 @@ int main(int argc, char** argv) try {
         ("text,t", po::value(&textfiles), "path to file with text to build dictionary on")
         ("dict,d", po::value(&dictfile), "path to file with dictionary")
         ("alphabet,a", po::value(&alphabet_name), "alphabet to use: ru/en")
+        ("shorten,s", po::value(&shorten), "shorten first word in solution to shuffle results")
         ("number", po::value(&numbers), "number to decompose");
 
     po::positional_options_description posit;
@@ -59,7 +61,7 @@ int main(int argc, char** argv) try {
 
     for (auto n: numbers) {
         std::cout << n << ":\n";
-        auto res = suger->maximize_word_length(n);
+        auto res = suger->maximize_word_length(n, shorten);
         if (!res) {
             std::cout << "nothing found\n";
             continue;

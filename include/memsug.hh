@@ -23,7 +23,7 @@ public:
     }
 
     auto suggest_word(const text::Number&) const -> optional<std::string>;
-    auto maximize_word_length(const text::Number&) const -> optional<std::vector<Synonyms>>;
+    auto maximize_word_length(const text::Number&, int shorten_first_word = 0) const -> optional<std::vector<Synonyms>>;
     auto dict() const -> const text::Dict& { return dict_; }
 
 private:
