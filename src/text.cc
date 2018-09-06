@@ -129,9 +129,9 @@ auto Dict::dump() const
     return res;
 }
 
-void Dict::load(const save::blob& root) {
-    alphabet_ = Alphabet(root.get_child("alphabet"));
-
+Dict::Dict(const save::blob& root):
+    alphabet_(root.get_child("alphabet"))
+{
     for (const auto& p: root.get_child("entries"))
         insert(Word(p.second));
 }

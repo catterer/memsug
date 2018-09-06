@@ -86,4 +86,17 @@ TEST_F(DictDonShort, update) {
     check("Посередь");
 }
 
+TEST_F(DictDonShort, update_after_dumpload) {
+    auto check = [&] (const std::string& w) {
+        auto d = save::dumpload(dict);
+        auto ei = d.idxstr().find(w);
+        ASSERT_NE(ei, d.idxstr().end());
+        ASSERT_EQ(ei->second->word().str, w);
+    };
+    check("батюшка");
+    check("Наполнена");
+    check("копытами");
+    check("Посередь");
+}
+
 }

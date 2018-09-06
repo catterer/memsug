@@ -60,14 +60,14 @@ private:
 
 class Dict:
     public std::unordered_map<WordId, std::shared_ptr<DictEntry>>,
-    public save::serializable
+    public save::dumpable
 {
 public:
     using Idxstr = std::unordered_map<std::string, std::shared_ptr<DictEntry>>;
+    Dict(const save::blob&);
     Dict(const Alphabet& ab): alphabet_{ab} {}
 
     auto dump() const -> save::blob override;
-    void load(const save::blob&) override;
 
     void update(const std::string& textfile, AdjMatrix&);
     void insert(const Word&);

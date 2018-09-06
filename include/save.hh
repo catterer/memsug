@@ -28,9 +28,9 @@ public:
 };
 
 template<typename T>
-T dumpload(T&& val) {
-    blob b = val.dump();
-    return T(b);
+T dumpload(const T& val) {
+    T t(val.dump());
+    return std::move(t);
 }
 
 }
