@@ -70,7 +70,7 @@ public:
     void load(const save::blob&) override;
 
     void update(const std::string& textfile, AdjMatrix&);
-    void insert(Word&&);
+    void insert(const Word&);
     void consider_sentence(const std::string&, AdjMatrix&);
     auto consider_word(const std::string&) -> WordId;
     auto idxstr() const -> const Idxstr& { return idxstr_; }

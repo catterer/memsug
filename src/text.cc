@@ -129,7 +129,6 @@ auto Dict::dump() const
 }
 
 void Dict::load(const save::blob& root) {
-    // XXX BUG: last_id not restored
     // XXX BUG: alphabet not restored
     for (const auto& p: root.get_child("entries"))
         insert(Word(p.second));
@@ -167,19 +166,23 @@ void Dict::consider_sentence(const std::string& stnc_, AdjMatrix& m) {
     }
 }
 
-WordId Dict::consider_word(const std::string& w) {
-    auto i = idxstr_.find(w);
+WordId Dict::consider_word(const std::string& w_str) {
+    auto i = idxstr_.find(w_str);
     if (i != idxstr_.end())
         return i->second->word().id;
 
-    insert(Word{last_id_, alphabet_.map(w), w});
-    return last_id_++;
+    Word w{last_id_, alphabet_.map(w_str), w_str};
+    insert(w);
+    return w.id;
 }
 
-void Dict::insert(Word&& w) {
-    auto entry = std::make_shared<DictEntry>(std::move(w));
-    emplace(entry->word().id, entry);
+void Dict::insert(const Word& w) {
+    auto entry = std::make_shared<DictEntry>(w);
+    auto p = emplace(entry->word().id, entry);
+    assert(p.second);
     idxstr_.emplace(entry->word().str, entry);
+    if (last_id_ <= entry->word().id)
+        last_id_ = entry->word().id + 1;
 }
 
 }
