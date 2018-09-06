@@ -179,6 +179,7 @@ WordId Dict::consider_word(const std::string& w_str) {
 }
 
 void Dict::insert(const Word& w) {
+    assert(w.id);
     auto entry = std::make_shared<DictEntry>(w);
     auto p = emplace(entry->word().id, entry);
     assert(p.second);

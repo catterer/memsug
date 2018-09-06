@@ -79,7 +79,7 @@ private:
     static const size_t max_file_size_ = 100*1024*1024;
 
     Alphabet alphabet_;
-    WordId last_id_{0};
+    WordId last_id_{1};
     Idxstr idxstr_;
 };
 
