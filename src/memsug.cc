@@ -33,12 +33,16 @@ auto Suger::maximize_word_length(const text::Number& num, int shorten_first_word
         if (ti == tree_.end())
             return {};
 
+        for (; ti->empty() and ti != tree_.cbegin() and pi != num.begin(); pi--)
+            ti = ti->parent();
+
         for (; shorten_first_word && pi != num.begin(); shorten_first_word--, pi--)
             ti = ti->parent();
 
         if (pi == num.begin())
             return {};
 
+        assert(not ti->empty());
         res.emplace_back(ti->value());
     } while (pi != num.end());
 
