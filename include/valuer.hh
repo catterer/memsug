@@ -36,7 +36,7 @@ private:
     auto weight(Vtx from, Vtx to) const -> Weight;
 
     Matrix matrix_;
-    std::unordered_map<Vtx, WordId> vxwid_;
+    std::vector<WordId> vxwid_;
     Vtx last_vtx_id_{1};
     const AdjMatrix& adjmx_;
 };

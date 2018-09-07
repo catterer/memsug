@@ -34,6 +34,14 @@ void Valuer::update(const std::vector<Synonyms>& sms) {
         return;
 
     std::vector<std::vector<Vtx>> vxm;
+
+    size_t vxwid_new_size = vxwid_.size();
+
+    for (const auto& sm: sms)
+        vxwid_new_size += sm.size();
+
+    vxwid_.resize(vxwid_new_size+1, 0);
+
     for (const auto& sm: sms) {
         if (sm.empty())
             throw std::invalid_argument("empty row");
