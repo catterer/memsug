@@ -161,6 +161,8 @@ void Dict::consider_sentence(const std::string& stnc_, AdjMatrix& m) {
     optional<WordId> prev_id;
     for (auto w = strtok_r(stnc.get(), delim_w, &sp_w); w; w = strtok_r(NULL, delim_w, &sp_w)) {
         std::string word = w;
+        if (word.size() < 4)
+            continue;
         auto new_id = consider_word(word);
         if (prev_id)
             m[*prev_id].emplace(new_id);
