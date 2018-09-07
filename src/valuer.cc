@@ -89,6 +89,7 @@ auto Valuer::solve() const
     routes[0].weight = 0;
     std::queue<Vtx> todo{};
     todo.push(0);
+    std::vector<bool> passed(matrix_.size(), false);
 
     for (; not todo.empty(); todo.pop()) {
         auto current = todo.front();
@@ -98,8 +99,10 @@ auto Valuer::solve() const
             auto new_weight = routes.at(current).weight + n.weight;
             if (new_weight < edge.weight)
                 edge = Edge{current, new_weight};
-            todo.push(n.vtx);
+            if (not passed[current])
+                todo.push(n.vtx);
         }
+        passed[current] = true;
     }
 
     Solution sol{};
