@@ -2,8 +2,19 @@
 #include <valuer.hh>
 #include <stdexcept>
 #include <boost/program_options.hpp>
+#include <map>
 
 namespace po = boost::program_options;
+
+using Cb = std::function<void(int, char**)>;
+
+void help(int, char**);
+void suggest(int, char**);
+
+static const std::map<std::string, Cb> handlers = {
+    {"help", help},
+    {"suggest", suggest}
+};
 
 void conflicting_options(const po::variables_map& vm,
                          const std::string& opt1, const std::string& opt2)
@@ -14,7 +25,7 @@ void conflicting_options(const po::variables_map& vm,
                                opt1 + "' and '" + opt2 + "'.");
 }
 
-int main(int argc, char** argv) try {
+void suggest(int argc, char** argv) {
     std::vector<std::string> textfiles;
     std::string alphabet_name;
     std::vector<std::string> numbers;
@@ -39,7 +50,7 @@ int main(int argc, char** argv) try {
 
     if (vm.count("help")) {  
         std::cout << opts << "\n";
-        return 0;
+        return;
     }
 
     if (!vm.count("text"))
@@ -65,11 +76,6 @@ int main(int argc, char** argv) try {
             auto res = suger->maximize_word_length(n, shorten);
             if (!res)
                 break;
-//            std::cout << "s" << shorten << ": ";
-            for (const auto& v: *res)
-                std::cout << suger->dict().at(v[0])->word().str << " ";
-//            std::cout << "\n";
-
             valr.update(*res);
         }
 
@@ -79,7 +85,28 @@ int main(int argc, char** argv) try {
             std::cout << suger->dict().at(wid)->word().str << " ";
         std::cout << "\n";
     }
+}
 
+void help(int, char**) {
+    std::cout << "Available subcommands: \n";
+    for (const auto& h: handlers)
+        std::cout << "    " << h.first << "\n";
+}
+
+int main(int argc, char** argv) try {
+    if (argc < 2) {
+        help(0, NULL);
+        return 0;
+    }
+
+    std::string method(argv[1]);
+
+    if (!handlers.count(method)) {
+        help(0, NULL);
+        return 0;
+    }
+
+    handlers.at(method)(argc-1, argv+1);
     return 0;
 } catch (const std::exception& x) {
     std::cerr << x.what() << "\n";
