@@ -16,6 +16,7 @@ set(PREFTREE
         src/preftree.cc
         src/text.cc
         src/memsug.cc
+        src/valuer.cc
         src/utf.cc)
 
 add_library(memsug ${PREFTREE})
