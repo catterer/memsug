@@ -9,7 +9,7 @@ static const Vtx BEGIN = 0;
 static const Vtx END = 1;
 
 static const Weight INF = std::numeric_limits<Weight>::max();
-static const Weight DEF = 2;
+static const Weight DEF = 3;
 
 void Matrix::connect(Vtx from, Vtx to, Weight weight) {
     (*this)[from].emplace(Edge{to, weight});
@@ -26,7 +26,7 @@ auto Valuer::weight(Vtx from, Vtx to) const
     auto to_wid = vxwid_.at(to);
     auto ai = adjmx_.find(from_wid);
     if (ai != adjmx_.end() and ai->second.count(to_wid))
-        return DEF/2;
+        return 1;
     return DEF;
 }
 

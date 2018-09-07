@@ -19,7 +19,6 @@ int main(int argc, char** argv) try {
     std::string alphabet_name;
     std::vector<std::string> numbers;
     std::string dictfile;
-    int shorten = 0;
 
     po::options_description opts("Allowed options");
     opts.add_options()
@@ -27,7 +26,6 @@ int main(int argc, char** argv) try {
         ("text,t", po::value(&textfiles), "path to file with text to build dictionary on")
         ("dict,d", po::value(&dictfile), "path to file with dictionary")
         ("alphabet,a", po::value(&alphabet_name), "alphabet to use: ru/en")
-        ("shorten,s", po::value(&shorten), "shorten first word in solution to shuffle results")
         ("number", po::value(&numbers), "number to decompose");
 
     po::positional_options_description posit;
@@ -60,28 +58,26 @@ int main(int argc, char** argv) try {
 
     auto suger = memsug::Suger::create(std::move(dict));
 
-    valuer::Valuer valr(m);
-
     for (auto n: numbers) {
-        std::cout << n << ":\n";
-        auto res = suger->maximize_word_length(n, shorten);
-        if (!res) {
-            std::cout << "nothing found\n";
-            continue;
+        valuer::Valuer valr(m);
+
+        for (auto shorten = 0; ; shorten++) {
+            auto res = suger->maximize_word_length(n, shorten);
+            if (!res)
+                break;
+//            std::cout << "s" << shorten << ": ";
+            for (const auto& v: *res)
+                std::cout << suger->dict().at(v[0])->word().str << " ";
+//            std::cout << "\n";
+
+            valr.update(*res);
         }
 
-        valr.update(*res);
+        std::cout << n << ": ";
         auto sol = valr.solve();
-        std::cout << "Proposed soluton: ";
         for (const auto& wid: sol)
             std::cout << suger->dict().at(wid)->word().str << " ";
-
-        std::cout << "\n\nOther variants:\n";
-        for (const auto& v: *res) {
-            for (const auto& w: v)
-                std::cout << suger->dict().at(w)->word().str << " ";
-            std::cout << "\n";
-        }
+        std::cout << "\n";
     }
 
     return 0;
