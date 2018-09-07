@@ -1,4 +1,5 @@
 #include <memsug.hh>
+#include <valuer.hh>
 #include <stdexcept>
 #include <boost/program_options.hpp>
 
@@ -59,6 +60,8 @@ int main(int argc, char** argv) try {
 
     auto suger = memsug::Suger::create(std::move(dict));
 
+    valuer::Valuer valr(m);
+
     for (auto n: numbers) {
         std::cout << n << ":\n";
         auto res = suger->maximize_word_length(n, shorten);
@@ -67,6 +70,13 @@ int main(int argc, char** argv) try {
             continue;
         }
 
+        valr.update(*res);
+        auto sol = valr.solve();
+        std::cout << "Proposed soluton: ";
+        for (const auto& wid: sol)
+            std::cout << suger->dict().at(wid)->word().str << " ";
+
+        std::cout << "\n\nOther variants:\n";
         for (const auto& v: *res) {
             for (const auto& w: v)
                 std::cout << suger->dict().at(w)->word().str << " ";
