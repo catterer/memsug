@@ -6,7 +6,8 @@
 namespace valuer {
 
 static const Vtx BEGIN = 0;
-static const Vtx END = std::numeric_limits<Vtx>::max();
+static const Vtx END = 1;
+
 static const Weight INF = std::numeric_limits<Weight>::max();
 static const Weight DEF = 2;
 
@@ -35,12 +36,12 @@ void Valuer::update(const std::vector<Synonyms>& sms) {
 
     std::vector<std::vector<Vtx>> vxm;
 
-    size_t vxwid_new_size = vxwid_.size();
+    size_t vxwid_new_size = vxwid_.size() + RESERVED;
 
     for (const auto& sm: sms)
         vxwid_new_size += sm.size();
 
-    vxwid_.resize(vxwid_new_size+1, 0);
+    vxwid_.resize(vxwid_new_size, 0);
 
     for (const auto& sm: sms) {
         if (sm.empty())
@@ -53,6 +54,8 @@ void Valuer::update(const std::vector<Synonyms>& sms) {
         }
         vxm.emplace_back(std::move(row));
     }
+
+    matrix_.resize(vxwid_new_size, {});
 
     for (auto vx: *vxm.begin())
         matrix_.connect(BEGIN, vx, DEF);
@@ -81,7 +84,8 @@ std::ostream& operator<<(std::ostream& out, const std::unordered_map<Vtx, Edge>&
 auto Valuer::solve() const
     -> Solution
 {
-    std::unordered_map<Vtx, Edge> routes;
+    std::vector<Edge> routes{};
+    routes.resize(matrix_.size(), Edge{0, INF});
     routes[0].weight = 0;
     std::queue<Vtx> todo{};
     todo.push(0);
@@ -90,7 +94,7 @@ auto Valuer::solve() const
         auto current = todo.front();
         const auto& neighb = matrix_.at(current);
         for (auto n: neighb) {
-            auto& edge = routes.emplace(n.vtx, Edge{current, INF}).first->second;
+            auto& edge = routes[n.vtx];
             auto new_weight = routes.at(current).weight + n.weight;
             if (new_weight < edge.weight)
                 edge = Edge{current, new_weight};

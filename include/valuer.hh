@@ -4,6 +4,8 @@
 #include <vector>
 #include <unordered_map>
 
+#define RESERVED 2
+
 namespace valuer {
 
 using memsug::Synonyms;
@@ -20,7 +22,7 @@ struct Edge {
     bool operator<(const Edge& other) const { return vtx < other.vtx; }
 };
 
-class Matrix: public std::unordered_map<Vtx, std::set<Edge>> {
+class Matrix: public std::vector<std::set<Edge>> {
 public:
     Matrix() = default;
     void connect(Vtx from, Vtx to, Weight);
@@ -37,7 +39,7 @@ private:
 
     Matrix matrix_;
     std::vector<WordId> vxwid_;
-    Vtx last_vtx_id_{1};
+    Vtx last_vtx_id_{RESERVED};
     const AdjMatrix& adjmx_;
 };
 
