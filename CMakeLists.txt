@@ -13,6 +13,8 @@ include_directories(include ~/boost_install/include)
 link_directories(~/boost_install/lib)
 include_directories(include ~/gperftools_install/include)
 link_directories(~/gperftools_install/lib)
+include_directories(include ~/libevent_install/include)
+link_directories(~/libevent_install/lib)
  
 set(PREFTREE
         src/preftree.cc
@@ -35,3 +37,7 @@ target_link_libraries(memsug_tool pthread)
 target_link_libraries(memsug_tool boost_program_options)
 target_link_libraries(memsug_tool profiler)
 target_link_libraries(memsug_tool tcmalloc)
+
+add_executable(memsug_daemon src/memsug_daemon.cc)
+target_link_libraries(memsug_daemon memsug)
+target_link_libraries(memsug_daemon event)
