@@ -65,10 +65,11 @@ public:
     DictDonShort():
         dict(Alphabet::classic_ru())
     {
-        dict.update(ROOT "/misc/don_short.txt");
+        dict.update(text_path);
     }
 
     Dict dict;
+    const char* text_path = ROOT "/misc/don_short.txt";
 };
 
 TEST_F(DictDonShort, adjmx) {
@@ -119,6 +120,18 @@ TEST_F(DictDonShort, update_after_dumpload) {
     check("Наполнена");
     check("копытами");
     check("Посередь");
+}
+
+TEST_F(DictDonShort, update_idempotency) {
+    std::stringstream out_a;
+    save::pt::write_json(out_a, dict.dump());
+
+    dict.update(text_path);
+
+    std::stringstream out_b;
+    save::pt::write_json(out_b, dict.dump());
+
+    ASSERT_EQ(out_a.str(), out_b.str());
 }
 
 }
