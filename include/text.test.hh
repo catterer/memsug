@@ -65,10 +65,9 @@ public:
     DictDonShort():
         dict(Alphabet::classic_ru())
     {
-        dict.update(ROOT "/misc/don_short.txt", adjmx);
+        dict.update(ROOT "/misc/don_short.txt");
     }
 
-    AdjMatrix adjmx;
     Dict dict;
 };
 
@@ -82,9 +81,9 @@ TEST_F(DictDonShort, adjmx) {
         if (!dict.idxstr().count(b_str)) return false;
         else b = dict.idxstr().at(b_str)->word().id;
 
-        if (!adjmx.count(a))
+        if (!dict.adjmx().count(a))
             return false;
-        return adjmx[a].count(b);
+        return dict.adjmx().at(a).count(b);
     };
 
     ASSERT_TRUE(is_adj("славная", "землюшка"));

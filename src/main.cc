@@ -70,8 +70,6 @@ void suggest(int argc, char** argv) {
 
     std::unique_ptr<text::Dict> dict{};
 
-    text::AdjMatrix m;
-
     if (vm.count("dict")) {
         save::blob blob;
         boost::property_tree::read_json(dictfile, blob);
@@ -81,7 +79,7 @@ void suggest(int argc, char** argv) {
             throw std::invalid_argument("alphabet not specified");
         dict = std::make_unique<text::Dict>(text::Alphabet::by_name(alphabet_name));
         for (const auto f: textfiles)
-            dict->update(f, m);
+            dict->update(f);
     } else
         throw std::invalid_argument("you must specify dictionary somehow");
 
@@ -89,7 +87,7 @@ void suggest(int argc, char** argv) {
     dict = {};
 
     for (auto n: numbers) {
-        valuer::Valuer valr(m);
+        valuer::Valuer valr(suger->dict().adjmx());
 
         for (auto shorten = 0; ; shorten++) {
             auto res = suger->maximize_word_length(n, shorten);
@@ -146,10 +144,9 @@ void build(int argc, char** argv) {
 
     required_options(vm, {"text", "alphabet", "out"});
 
-    text::AdjMatrix m;
     text::Dict dict(text::Alphabet::by_name(alphabet_name));
     for (const auto f: textfiles)
-        dict.update(f, m);
+        dict.update(f);
 
     boost::property_tree::write_json(dictfile, dict.dump());
 }

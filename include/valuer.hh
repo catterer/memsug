@@ -31,6 +31,7 @@ public:
 class Valuer {
 public:
     Valuer(const AdjMatrix&);
+    Valuer(AdjMatrix&&);
     void update(const std::vector<Synonyms>&);
     auto solve() const -> Solution;
 

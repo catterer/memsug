@@ -76,16 +76,18 @@ public:
 
     auto dump() const -> save::blob override;
 
-    void update(const std::string& textfile, AdjMatrix&);
+    void update(const std::string& textfile);
     void insert(const Word&);
-    void consider_sentence(const std::string&, AdjMatrix&);
+    void consider_sentence(const std::string&);
     auto consider_word(const std::string&) -> WordId;
     auto idxstr() const -> const Idxstr& { return idxstr_; }
+    auto adjmx() const -> const AdjMatrix& { return adjmx_; }
 
 private:
     static const size_t max_file_size_ = 100*1024*1024;
 
     Alphabet alphabet_;
+    AdjMatrix adjmx_;
     WordId last_id_{1};
     Idxstr idxstr_;
 };

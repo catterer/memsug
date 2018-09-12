@@ -152,6 +152,7 @@ auto Dict::dump() const
     save::blob res{};
 
     res.add_child("alphabet", alphabet_.dump());
+    res.add_child("adjmx", adjmx_.dump());
 
     save::blob entries{};
     for (const auto& p: *this)
@@ -162,13 +163,14 @@ auto Dict::dump() const
 }
 
 Dict::Dict(const save::blob& root):
-    alphabet_(root.get_child("alphabet"))
+    alphabet_(root.get_child("alphabet")),
+    adjmx_(root.get_child("adjmx"))
 {
     for (const auto& p: root.get_child("entries"))
         insert(Word(p.second));
 }
 
-void Dict::update(const std::string& textfile, AdjMatrix& m) {
+void Dict::update(const std::string& textfile) {
     auto f = std::shared_ptr<FILE>(::fopen(textfile.c_str(), "r"), [] (FILE* f) { if (f) fclose(f); });
     if (!f)
         throw std::runtime_error("Failed to open dict file");
@@ -183,10 +185,10 @@ void Dict::update(const std::string& textfile, AdjMatrix& m) {
     char* sp_s = NULL;
     const char* delim_s = ".?!;\"',:()";
     for (auto stnc = strtok_r(buf.get(), delim_s, &sp_s); stnc; stnc = strtok_r(NULL, delim_s, &sp_s))
-        consider_sentence(stnc, m);
+        consider_sentence(stnc);
 }
 
-void Dict::consider_sentence(const std::string& stnc_, AdjMatrix& m) {
+void Dict::consider_sentence(const std::string& stnc_) {
     char* sp_w = NULL;
     const char* delim_w = " \t\n\r+=-";
     auto stnc = std::shared_ptr<char>(strdup(stnc_.c_str()), [] (char* p) { free(p); });
@@ -197,7 +199,7 @@ void Dict::consider_sentence(const std::string& stnc_, AdjMatrix& m) {
             continue;
         auto new_id = consider_word(word);
         if (prev_id)
-            m[*prev_id].emplace(new_id);
+            adjmx_[*prev_id].emplace(new_id);
         prev_id.emplace(new_id);
     }
 }
