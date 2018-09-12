@@ -114,6 +114,38 @@ std::ostream& operator<<(std::ostream& out, const Word& w) {
     return out;
 }
 
+auto AdjMatrix::dump() const
+    -> save::blob
+{
+    save::blob res{};
+    for (const auto& p: *this) {
+        save::blob nbs;
+        for (const auto& nb: p.second)
+            nbs.add_child(std::to_string(nb), {});
+        res.add_child(std::to_string(p.first), std::move(nbs));
+    }
+    return res;
+}
+
+static WordId parse_word_id(const std::string& s) {
+    WordId res;
+    char* e;
+    res = strtoul(s.c_str(), &e, 10);
+    if (*e)
+        throw std::invalid_argument("failed to parse_word_id()");
+    return res;
+}
+
+void AdjMatrix::load(const save::blob& root) {
+    for (const auto& p: root) {
+        auto wid = parse_word_id(p.first);
+        auto& set = emplace(wid, std::set<WordId>()).first->second;
+
+        for (const auto& nb: p.second)
+            set.emplace(parse_word_id(nb.first));
+    }
+}
+
 auto Dict::dump() const
     -> save::blob
 {

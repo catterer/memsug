@@ -37,6 +37,29 @@ TEST(Alphabet, dl_map_en_case) {
     ASSERT_EQ(save::dumpload(Alphabet::classic_en()).map("ANONIMITY"), "1909");
 }
 
+TEST(AdjMatrix, serialization) {
+    auto m = save::dumpload(AdjMatrix{{6, {5,6,7}}, {5, {1,2,3}}});
+    std::string expected =
+        "{\n"
+        "    \"6\": {\n"
+        "        \"5\": \"\",\n"
+        "        \"6\": \"\",\n"
+        "        \"7\": \"\"\n"
+        "    },\n"
+        "    \"5\": {\n"
+        "        \"1\": \"\",\n"
+        "        \"2\": \"\",\n"
+        "        \"3\": \"\"\n"
+        "    }\n"
+        "}\n";
+
+
+    std::stringstream sm;
+    save::pt::write_json(sm, m.dump());
+
+    ASSERT_EQ(sm.str(), expected);
+}
+
 class DictDonShort: public ::testing::Test {
 public:
     DictDonShort():

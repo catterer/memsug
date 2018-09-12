@@ -42,12 +42,19 @@ struct Word: public save::serializable {
     std::string str;
 };
 
-class AdjMatrix: public std::unordered_map<WordId, std::set<WordId>> {
+class AdjMatrix:
+    public std::unordered_map<WordId, std::set<WordId>>,
+    public save::serializable
+{
 public:
-    AdjMatrix() = default;
+    using std::unordered_map<WordId, std::set<WordId>>::unordered_map;
+    AdjMatrix(const save::blob& root) { load(root); }
+
+    auto dump() const -> save::blob override;
+    void load(const save::blob&) override;
 };
 
-class DictEntry: public save::serializable{
+class DictEntry: public save::serializable {
 public:
     DictEntry(const Word& w): word_{w} {}
     auto dump() const -> save::blob override { return word_.dump(); }
