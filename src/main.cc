@@ -13,11 +13,13 @@ using Cb = std::function<void(int, char**)>;
 void help(int, char**);
 void suggest(int, char**);
 void build(int, char**);
+void update(int, char**);
 
 static const std::map<std::string, Cb> handlers = {
     {"help", help},
     {"suggest", suggest},
     {"build", build},
+    {"update", update},
 };
 
 void conflicting_options(const po::variables_map& vm,
@@ -61,7 +63,7 @@ void suggest(int argc, char** argv) {
     conflicting_options(vm, "text", "dict");
     conflicting_options(vm, "alphabet", "dict");
 
-    if (vm.count("help")) {  
+    if (vm.count("help")) {
         std::cout << opts << "\n";
         return;
     }
@@ -125,7 +127,6 @@ void build(int argc, char** argv) {
     po::options_description opts("Allowed options");
     opts.add_options()
         ("help,h", "print usage message")
-        ("json", "use json format")
         ("text,t", po::value(&textfiles), "path to file with text to build dictionary on")
         ("alphabet,a", po::value(&alphabet_name), "alphabet to use: ru/en")
         ("out,o", po::value(&dictfile), "path to output file");
@@ -137,7 +138,7 @@ void build(int argc, char** argv) {
     po::store(po::command_line_parser(argc, argv).options(opts).positional(posit).run(), vm);
     po::notify(vm);
 
-    if (vm.count("help")) {  
+    if (vm.count("help")) {
         std::cout << opts << "\n";
         return;
     }
@@ -145,6 +146,40 @@ void build(int argc, char** argv) {
     required_options(vm, {"text", "alphabet", "out"});
 
     text::Dict dict(text::Alphabet::by_name(alphabet_name));
+    for (const auto f: textfiles)
+        dict.update(f);
+
+    boost::property_tree::write_json(dictfile, dict.dump());
+}
+
+void update(int argc, char** argv) {
+    std::vector<std::string> textfiles;
+    std::string dictfile;
+
+    po::options_description opts("Allowed options");
+    opts.add_options()
+        ("help,h", "print usage message")
+        ("text,t", po::value(&textfiles), "path to file with text to use for dictionary update")
+        ("dict,d", po::value(&dictfile), "path to dictionary file to update");
+
+    po::positional_options_description posit;
+    posit.add("text", -1);
+
+    po::variables_map vm;
+    po::store(po::command_line_parser(argc, argv).options(opts).positional(posit).run(), vm);
+    po::notify(vm);
+
+    if (vm.count("help")) {
+        std::cout << opts << "\n";
+        return;
+    }
+
+    required_options(vm, {"text", "dict"});
+
+    save::blob blob;
+    boost::property_tree::read_json(dictfile, blob);
+    text::Dict dict(blob);
+
     for (const auto f: textfiles)
         dict.update(f);
 
