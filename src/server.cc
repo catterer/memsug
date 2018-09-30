@@ -29,6 +29,7 @@ Request::Request(evhttp_request** r):
     evreq_{*r}
 {
     *r = NULL;
+    Log(info) << "New request " << *this;
 }
 
 std::ostream& operator<<(std::ostream& out, const Request& r) {
@@ -40,6 +41,7 @@ void Request::reply(const std::string& data) {
     auto *buf = evhttp_request_get_output_buffer(evreq_);
     evbuffer_add(buf, data.c_str(), data.size());
     evhttp_send_reply(evreq_, HTTP_OK, "", buf);
+    evreq_ = NULL;
 }
 
 Request::~Request() {
