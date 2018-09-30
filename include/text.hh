@@ -57,6 +57,8 @@ public:
 class DictEntry: public save::serializable {
 public:
     DictEntry(const Word& w): word_{w} {}
+    virtual ~DictEntry() = default;
+
     auto dump() const -> save::blob override { return word_.dump(); }
     void load(const save::blob& root) override { return word_.load(root); }
     auto word() const -> const Word& { return word_; }
@@ -73,6 +75,7 @@ public:
     using Idxstr = std::unordered_map<std::string, std::shared_ptr<DictEntry>>;
     Dict(const save::blob&);
     Dict(const Alphabet& ab): alphabet_{ab} {}
+    virtual ~Dict() = default;
 
     auto dump() const -> save::blob override;
 
