@@ -1,8 +1,11 @@
 #pragma once
 #include <memory>
+#include <stdexcept>
 #include <evhttp.h>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/ini_parser.hpp>
+
+#include <util.hh>
 
 namespace server {
 
@@ -17,20 +20,6 @@ public:
 private:
     Config cfg_;
     Evhttp evhttp_;
-};
-
-class Request {
-public:
-    Request(evhttp_request**);
-    Request(const Request&) = delete;
-    Request& operator=(const Request&) = delete;
-    virtual ~Request();
-
-    void reply(const std::string& data);
-    friend std::ostream& operator<<(std::ostream&, const Request&);
-
-private:
-    evhttp_request* evreq_;
 };
 
 }

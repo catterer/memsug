@@ -1,4 +1,5 @@
 #include <server.hh>
+#include <request.hh>
 #include <log.hh>
 
 namespace server {
@@ -16,39 +17,27 @@ Server::Server(const std::string& config_path) {
 }
 
 void Server::run() {
-    evhttp_set_gencb(evhttp_.get(), [] (evhttp_request *req, void *) {
-            auto r = std::make_shared<Request>(&req);
-            return r->reply("<html><body><center><h1>Hello World!</h1></center></body></html>");
+    evhttp_set_gencb(evhttp_.get(), [] (evhttp_request *evreq, void *) {
+            try {
+                auto uri = request::Uri(evhttp_request_get_uri(evreq));
+
+                Log(debug) << "New event " << uri.path();
+
+                auto r = request::RequestFactory::get().assemble(std::move(uri), &evreq);
+                if (!r)
+                    return evhttp_send_error(evreq, HTTP_NOTFOUND, "Not found");
+
+                Log(warn) << "New request " << *r;
+
+                return r->process();
+            } catch(const std::exception& x) {
+                Log(error) << "Exception caught: " << x.what();
+                abort();
+            }
         } , nullptr);
 
     if (event_dispatch() == -1)
         throw std::runtime_error("failed to run event loop");
-}
-
-Request::Request(evhttp_request** r):
-    evreq_{*r}
-{
-    *r = NULL;
-    Log(info) << "New request " << *this;
-}
-
-std::ostream& operator<<(std::ostream& out, const Request& r) {
-    out << evhttp_request_get_uri(r.evreq_);
-    return out;
-}
-
-void Request::reply(const std::string& data) {
-    auto *buf = evhttp_request_get_output_buffer(evreq_);
-    evbuffer_add(buf, data.c_str(), data.size());
-    evhttp_send_reply(evreq_, HTTP_OK, "", buf);
-    evreq_ = NULL;
-}
-
-Request::~Request() {
-    if (evreq_) {
-        Log(error) << "Request not replied: " << *this;
-        evhttp_send_error(evreq_, HTTP_INTERNAL, "No reply from server");
-    }
 }
 
 }
