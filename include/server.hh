@@ -11,24 +11,26 @@ using Evhttp = std::shared_ptr<evhttp>;
 
 class Server {
 public:
-    Server(const std::string& config_path)
-    {
-        boost::property_tree::ini_parser::read_ini(config_path, cfg_);
-        if (!event_init())
-            throw std::runtime_error("failed to init libevent");
-
-        auto host = cfg_.get("bind.host", "localhost");
-        auto port = cfg_.get("bind.port", 8080);
-        evhttp_ = std::shared_ptr<evhttp>(evhttp_start(host.c_str(), port), evhttp_free);
-        if (!evhttp_)
-            throw std::runtime_error("failed to init http server");
-    }
-
+    Server(const std::string& config_path);
     void run();
 
 private:
     Config cfg_;
     Evhttp evhttp_;
+};
+
+class Request {
+public:
+    Request(evhttp_request**);
+    Request(const Request&) = delete;
+    Request& operator=(const Request&) = delete;
+    virtual ~Request();
+
+    void reply(const std::string& data);
+    friend std::ostream& operator<<(std::ostream&, const Request&);
+
+private:
+    evhttp_request* evreq_;
 };
 
 }

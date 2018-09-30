@@ -40,7 +40,8 @@ target_link_libraries(memsug_tool boost_program_options)
 
 add_executable(memsug_daemon
         src/memsug_daemon.cc
-        src/server.cc)
+        src/server.cc
+        src/log.cc)
 
 target_link_libraries(memsug_daemon memsug)
 target_link_libraries(memsug_daemon event)
