@@ -38,7 +38,10 @@ target_link_libraries(memsug_tool boost_program_options)
 #target_link_libraries(memsug_tool profiler)
 #target_link_libraries(memsug_tool tcmalloc)
 
-add_executable(memsug_daemon src/memsug_daemon.cc)
+add_executable(memsug_daemon
+        src/memsug_daemon.cc
+        src/server.cc)
+
 target_link_libraries(memsug_daemon memsug)
 target_link_libraries(memsug_daemon event)
 target_link_libraries(memsug_daemon boost_program_options)
